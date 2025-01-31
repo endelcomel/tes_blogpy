@@ -31,12 +31,25 @@
     </footer>
 
     <script>
-        function slugify(text) {
-            return text.toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^a-z0-9-]/g, '')
-                .replace(/--+/g, '-')
-                .trim();
+        function loadArticleFromURL() {
+            const slug = window.location.pathname.slice(1);
+            if (slug) {
+                fetchArticle(slug);
+            } else {
+                loadPosts();
+            }
+        }
+
+        function fetchArticle(slug) {
+            fetch(`https://blogpy-api.arekilang1.workers.dev/api/articles/${slug}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('article-title').textContent = data.judul;
+                    document.getElementById('article-date').textContent = data.tanggal_post;
+                    document.getElementById('article-content').innerHTML = data.isi;
+                    showArticle();
+                })
+                .catch(() => showPosts());
         }
 
         function showArticle() {
@@ -44,96 +57,47 @@
             document.getElementById('article-detail').classList.remove('hidden');
         }
 
-        function showPostsList() {
+        function showPosts() {
             document.getElementById('posts-list').classList.remove('hidden');
             document.getElementById('article-detail').classList.add('hidden');
         }
 
-        function loadArticles() {
-            fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
-                .then(response => response.json())
-                .then(data => {
-                    const postsList = document.getElementById('posts-list');
-                    postsList.innerHTML = ''; // Bersihkan sebelum menambahkan artikel
+        window.onload = loadArticleFromURL;
 
-                    data.forEach(post => {
-                        const slug = slugify(post.judul);
-                        const postItem = document.createElement('div');
-                        postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
-                        postItem.innerHTML = `
-                            <h3 class="text-xl font-semibold">${post.judul}</h3>
-                            <p class="text-gray-700">${post.tanggal_post}</p>
-                            <a href="/${slug}" class="text-blue-500 hover:underline mt-4 inline-block read-more" data-id="${post.id}" data-slug="${slug}">Read More</a>
-                        `;
-                        postsList.appendChild(postItem);
-                    });
-
-                    // Cek slug di URL saat halaman pertama kali dimuat
-                    checkSlugFromURL(data);
-
-                    // Event listener "Read More"
-                    document.querySelectorAll('.read-more').forEach(button => {
-                        button.addEventListener('click', function(event) {
-                            event.preventDefault();
-                            const articleId = this.getAttribute('data-id');
-                            const slug = this.getAttribute('data-slug');
-                            history.pushState({ page: "article", id: articleId }, '', `/${slug}`);
-                            fetchArticle(articleId);
-                        });
-                    });
-                })
-                .catch(error => {
-                    console.error('Error fetching posts:', error);
-                    document.getElementById('posts-list').innerHTML = '<p class="text-red-500">Failed to load posts. Please try again later.</p>';
+        // Fetch API untuk mengambil daftar artikel
+        fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
+            .then(response => response.json())
+            .then(data => {
+                const postsList = document.getElementById('posts-list');
+                data.forEach(post => {
+                    const slug = post.judul.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/--+/g, '-');
+                    const postItem = document.createElement('div');
+                    postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
+                    postItem.innerHTML = `
+                        <h3 class="text-xl font-semibold">${post.judul}</h3>
+                        <p class="text-gray-700">${post.tanggal_post}</p>
+                        <a href="${slug}" class="text-blue-500 hover:underline mt-4 inline-block read-more" data-id="${post.id}" data-slug="${slug}">Read More</a>
+                    `;
+                    postsList.appendChild(postItem);
                 });
-        }
 
-        function fetchArticle(id) {
-            fetch(`https://blogpy-api.arekilang1.workers.dev/api/articles/${id}`)
-                .then(response => response.json())
-                .then(article => {
-                    document.getElementById('article-title').textContent = article.judul;
-                    document.getElementById('article-date').textContent = article.tanggal_post;
-                    document.getElementById('article-content').innerHTML = article.isi;
-                    showArticle();
-                })
-                .catch(error => {
-                    console.error('Error fetching article:', error);
-                    alert('Failed to load article. Please try again later.');
+                // Event listener untuk tombol "Read More"
+                document.querySelectorAll('.read-more').forEach(button => {
+                    button.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        const slug = this.getAttribute('data-slug');
+                        history.pushState({}, '', `/${slug}`);
+                        fetchArticle(slug);
+                    });
                 });
-        }
+            })
+            .catch(error => {
+                console.error('Error fetching posts:', error);
+                document.getElementById('posts-list').innerHTML = '<p class="text-red-500">Failed to load posts. Please try again later.</p>';
+            });
 
-        function checkSlugFromURL(data) {
-            const pathSlug = window.location.pathname.slice(1);
-            if (pathSlug) {
-                const article = data.find(post => slugify(post.judul) === pathSlug);
-                if (article) {
-                    fetchArticle(article.id);
-                } else {
-                    showPostsList();
-                }
-            } else {
-                showPostsList();
-            }
-        }
-
-        // Tombol "Back to Posts"
-        document.getElementById('back-button').addEventListener('click', function() {
-            history.pushState({ page: "home" }, '', '/');
-            showPostsList();
-        });
-
-        // Deteksi perubahan URL saat tekan tombol "Back"
-        window.onpopstate = function(event) {
-            if (event.state && event.state.page === "article") {
-                fetchArticle(event.state.id);
-            } else {
-                showPostsList();
-            }
-        };
-
-        // Load daftar artikel saat pertama kali halaman dimuat
-        window.onload = loadArticles;
+        // Event listener untuk tombol kembali
+        document.getElementById('back-button').addEventListener('click', showPosts);
     </script>
 </body>
 </html>
