@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlogPy - Your Blog</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to BlogPy!</h1>
+    </header>
+    <main>
+        <h2>Latest Posts</h2>
+        <ul id="posts-list">
+            <!-- Posts will be inserted here via JavaScript -->
+        </ul>
+    </main>
+    <script>
+        // Fetch the blog posts from the Cloudflare Worker API
+        fetch("https://blogpy-api.workers.dev/api/posts")
+            .then(response => response.json())
+            .then(data => {
+                const postsList = document.getElementById('posts-list');
+                data.forEach(post => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${post.title}</strong><p>${post.content}</p>`;
+                    postsList.appendChild(li);
+                });
+            });
+    </script>
+</body>
+</html>
