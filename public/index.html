@@ -31,6 +31,13 @@
     </footer>
 
     <script>
+        function slugify(text) {
+            return text.toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9-]/g, '')
+                .replace(/--+/g, '-');
+        }
+
         function showArticle() {
             document.getElementById('posts-list').classList.add('hidden');
             document.getElementById('article-detail').classList.remove('hidden');
@@ -52,12 +59,13 @@
         .then(data => {
             const postsList = document.getElementById('posts-list');
             data.forEach(post => {
+                const slug = slugify(post.judul);
                 const postItem = document.createElement('div');
                 postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
                 postItem.innerHTML = `
                     <h3 class="text-xl font-semibold">${post.judul}</h3>
                     <p class="text-gray-700">${post.tanggal_post}</p>
-                    <button class="text-blue-500 hover:underline mt-4 inline-block read-more" data-id="${post.id}">Read More</button>
+                    <button class="text-blue-500 hover:underline mt-4 inline-block read-more" data-id="${post.id}" data-slug="${slug}">Read More</button>
                 `;
                 postsList.appendChild(postItem);
             });
