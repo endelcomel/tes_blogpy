@@ -31,8 +31,8 @@
                     const postItem = document.createElement('div');
                     postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
                     postItem.innerHTML = `
-                        <h3 class="text-xl font-semibold">${post.judul}</h3>  <!-- Ganti dengan judul -->
-                        <p class="text-gray-700">${post.isi.slice(0, 150)}...</p>  <!-- Ganti dengan isi -->
+                        <h3 class="text-xl font-semibold">${post.judul}</h3>
+                        <p class="text-gray-700">${post.tanggal_post}</p>
                         <a href="/post/${post.id}" class="text-blue-500 hover:underline mt-4 inline-block">Read More</a>
                     `;
                     postsList.appendChild(postItem);
