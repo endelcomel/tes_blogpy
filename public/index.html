@@ -22,7 +22,7 @@
             <h2 class="text-2xl font-semibold" id="article-title"></h2>
             <p class="text-gray-500" id="article-date"></p>
             <div class="mt-4" id="article-content"></div>
-            <button id="back-button" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Back to Posts</button>
+            <a href="/" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 inline-block">Back to Posts</a>
         </div>
     </main>
 
@@ -31,6 +31,15 @@
     </footer>
 
     <script>
+        function slugify(text) {
+            return text.toString().toLowerCase()
+                .replace(/\s+/g, '-')           // Replace spaces with -
+                .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+                .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+                .replace(/^-+/, '')             // Trim - from start of text
+                .replace(/-+$/, '');            // Trim - from end of text
+        }
+
         function showArticle() {
             document.getElementById('posts-list').classList.add('hidden');
             document.getElementById('article-detail').classList.remove('hidden');
@@ -52,23 +61,19 @@
         .then(data => {
             const postsList = document.getElementById('posts-list');
             data.forEach(post => {
+                const slug = slugify(post.judul);
                 const postItem = document.createElement('div');
                 postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
                 postItem.innerHTML = `
                     <h3 class="text-xl font-semibold">${post.judul}</h3>
                     <p class="text-gray-700">${post.tanggal_post}</p>
-                    <button class="text-blue-500 hover:underline mt-4 inline-block read-more" data-id="${post.id}">Read More</button>
+                    <a href="/${slug}" class="text-blue-500 hover:underline mt-4 inline-block">Read More</a>
                 `;
                 postsList.appendChild(postItem);
             });
 
-            // Add event listeners to all "Read More" buttons
-            document.querySelectorAll('.read-more').forEach(button => {
-                button.addEventListener('click', function() {
-                    const articleId = this.getAttribute('data-id');
-                    fetchArticle(articleId);
-                });
-            });
+            // Handle initial route
+            handleRoute();
         })
         .catch(error => {
             console.error('Error fetching posts:', error);
@@ -76,16 +81,20 @@
             postsList.innerHTML = '<p class="text-red-500">Failed to load posts. Please try again later.</p>';
         });
 
-        // Fungsi untuk menampilkan artikel berdasarkan ID
-        function fetchArticle(id) {
-            fetch(`https://blogpy-api.arekilang1.workers.dev/api/articles/${id}`)
+        // Fungsi untuk menampilkan artikel berdasarkan slug
+        function fetchArticle(slug) {
+            fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Failed to fetch article');
+                        throw new Error('Failed to fetch articles');
                     }
                     return response.json();
                 })
-                .then(article => {
+                .then(articles => {
+                    const article = articles.find(a => slugify(a.judul) === slug);
+                    if (!article) {
+                        throw new Error('Article not found');
+                    }
                     document.getElementById('article-title').textContent = article.judul;
                     document.getElementById('article-date').textContent = article.tanggal_post;
                     document.getElementById('article-content').innerHTML = article.isi;
@@ -97,8 +106,30 @@
                 });
         }
 
-        // Event listener untuk tombol kembali
-        document.getElementById('back-button').addEventListener('click', showPostsList);
+        // Handle routing
+        function handleRoute() {
+            const path = window.location.pathname.substring(1); // Remove leading slash
+            if (path) {
+                fetchArticle(path);
+            } else {
+                showPostsList();
+            }
+        }
+
+        // Listen for popstate events (back/forward navigation)
+        window.addEventListener('popstate', handleRoute);
+
+        // Intercept link clicks
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A') {
+                const href = e.target.getAttribute('href');
+                if (href.startsWith('/')) {
+                    e.preventDefault();
+                    window.history.pushState(null, '', href);
+                    handleRoute();
+                }
+            }
+        });
     </script>
 </body>
 </html>
