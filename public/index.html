@@ -22,7 +22,7 @@
         <div id="article-detail" class="mt-6 p-6 bg-white shadow-lg rounded-lg hidden">
             <h2 class="text-2xl font-semibold" id="article-title"></h2>
             <p class="text-gray-500" id="article-date"></p>
-            <p class="mt-4" id="article-content"></p>
+            <div class="mt-4" id="article-content"></div>
             <button id="back-button" class="mt-4 text-blue-500 hover:underline">Back to Posts</button>
         </div>
     </main>
@@ -72,9 +72,8 @@
                     // Tampilkan artikel lengkap
                     document.getElementById('article-title').textContent = article.judul;
                     document.getElementById('article-date').textContent = article.tanggal_post;
-                    // document.getElementById('article-content').textContent = article.isi;
-                    document.getElementById('article-content').innerHTML = article.isi;
-                    
+                    document.getElementById('article-content').innerHTML = article.isi;  // Isi artikel menggunakan HTML
+
                     // Sembunyikan daftar artikel dan tampilkan artikel lengkap
                     document.getElementById('posts-list').style.display = 'none';
                     document.getElementById('article-detail').style.display = 'block';
