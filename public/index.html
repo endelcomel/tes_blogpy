@@ -4,29 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BlogPy - Your Blog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <header>
-        <h1>Welcome to BlogPy!</h1>
+<body class="bg-gray-50">
+    <header class="bg-blue-600 text-white p-6 text-center">
+        <h1 class="text-3xl font-bold">Welcome to BlogPy!</h1>
     </header>
-    <main>
-        <h2>Latest Posts</h2>
-        <ul id="posts-list">
-            <!-- Posts will be inserted here via JavaScript -->
-        </ul>
+
+    <main class="container mx-auto p-6">
+        <h2 class="text-2xl font-semibold mb-4">Latest Posts</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="posts-list">
+            <!-- Posts will be inserted here by JavaScript -->
+        </div>
     </main>
+
+    <footer class="bg-blue-600 text-white text-center py-4">
+        <p>&copy; 2025 BlogPy. All Rights Reserved.</p>
+    </footer>
+
     <script>
-        // Fetch the blog posts from the Cloudflare Worker API
-        fetch("https://blogpy-api.workers.dev/api/posts")
+        fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
             .then(response => response.json())
             .then(data => {
                 const postsList = document.getElementById('posts-list');
                 data.forEach(post => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<strong>${post.title}</strong><p>${post.content}</p>`;
-                    postsList.appendChild(li);
+                    const postItem = document.createElement('div');
+                    postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
+                    postItem.innerHTML = `
+                        <h3 class="text-xl font-semibold">${post.title}</h3>
+                        <p class="text-gray-700">${post.content.slice(0, 150)}...</p>
+                        <a href="/post/${post.id}" class="text-blue-500 hover:underline mt-4 inline-block">Read More</a>
+                    `;
+                    postsList.appendChild(postItem);
                 });
-            });
+            })
+            .catch(error => console.error('Error fetching posts:', error));
     </script>
 </body>
 </html>
