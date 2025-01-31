@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlogPy - Your Blog</title>
+    <title>BlogPy - Latest Posts</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
+
     <header class="bg-blue-600 text-white p-6 text-center">
         <h1 class="text-3xl font-bold">Welcome to BlogPy!</h1>
     </header>
@@ -16,6 +17,14 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="posts-list">
             <!-- Posts will be inserted here by JavaScript -->
         </div>
+
+        <!-- Area untuk menampilkan artikel lengkap berdasarkan ID -->
+        <div id="article-detail" class="mt-6 p-6 bg-white shadow-lg rounded-lg hidden">
+            <h2 class="text-2xl font-semibold" id="article-title"></h2>
+            <p class="text-gray-500" id="article-date"></p>
+            <p class="mt-4" id="article-content"></p>
+            <button id="back-button" class="mt-4 text-blue-500 hover:underline">Back to Posts</button>
+        </div>
     </main>
 
     <footer class="bg-blue-600 text-white text-center py-4">
@@ -23,26 +32,64 @@
     </footer>
 
     <script>
+        // Fetch API untuk mengambil daftar artikel
         fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
-            .then(response => response.json())
-            .then(data => {
-                const postsList = document.getElementById('posts-list');
-                data.forEach(post => {
-                    const postItem = document.createElement('div');
-                    postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
-                    postItem.innerHTML = `
-                        <h3 class="text-xl font-semibold">${post.judul}</h3>
-                        <p class="text-gray-700">${post.tanggal_post}</p>
-                        <a href="/post/${post.id}" class="text-blue-500 hover:underline mt-4 inline-block">Read More</a>
-                    `;
-                    postsList.appendChild(postItem);
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching posts:', error);
-                const postsList = document.getElementById('posts-list');
-                postsList.innerHTML = '<p class="text-red-500">Failed to load posts. Please try again later.</p>';
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch posts');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const postsList = document.getElementById('posts-list');
+            data.forEach(post => {
+                const postItem = document.createElement('div');
+                postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
+                postItem.innerHTML = `
+                    <h3 class="text-xl font-semibold">${post.judul}</h3>
+                    <p class="text-gray-700">${post.tanggal_post}</p>
+                    <a href="#" class="text-blue-500 hover:underline mt-4 inline-block" onclick="fetchArticle(${post.id})">Read More</a>
+                `;
+                postsList.appendChild(postItem);
             });
+        })
+        .catch(error => {
+            console.error('Error fetching posts:', error);
+            const postsList = document.getElementById('posts-list');
+            postsList.innerHTML = '<p class="text-red-500">Failed to load posts. Please try again later.</p>';
+        });
+
+        // Fungsi untuk menampilkan artikel berdasarkan ID
+        function fetchArticle(id) {
+            fetch(`https://blogpy-api.arekilang1.workers.dev/api/articles/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch article');
+                    }
+                    return response.json();
+                })
+                .then(article => {
+                    // Tampilkan artikel lengkap
+                    document.getElementById('article-title').textContent = article.judul;
+                    document.getElementById('article-date').textContent = article.tanggal_post;
+                    // document.getElementById('article-content').textContent = article.isi;
+                    document.getElementById('article-content').innerHTML = article.isi;
+                    
+                    // Sembunyikan daftar artikel dan tampilkan artikel lengkap
+                    document.getElementById('posts-list').style.display = 'none';
+                    document.getElementById('article-detail').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching article:', error);
+                    alert('Failed to load article. Please try again later.');
+                });
+        }
+
+        // Fungsi untuk kembali ke daftar artikel
+        document.getElementById('back-button').addEventListener('click', () => {
+            document.getElementById('posts-list').style.display = 'grid';
+            document.getElementById('article-detail').style.display = 'none';
+        });
     </script>
 </body>
 </html>
