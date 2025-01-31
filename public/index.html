@@ -31,14 +31,18 @@
                     const postItem = document.createElement('div');
                     postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
                     postItem.innerHTML = `
-                        <h3 class="text-xl font-semibold">${post.title}</h3>
-                        <p class="text-gray-700">${post.content.slice(0, 150)}...</p>
+                        <h3 class="text-xl font-semibold">${post.judul}</h3>  <!-- Ganti dengan judul -->
+                        <p class="text-gray-700">${post.isi.slice(0, 150)}...</p>  <!-- Ganti dengan isi -->
                         <a href="/post/${post.id}" class="text-blue-500 hover:underline mt-4 inline-block">Read More</a>
                     `;
                     postsList.appendChild(postItem);
                 });
             })
-            .catch(error => console.error('Error fetching posts:', error));
+            .catch(error => {
+                console.error('Error fetching posts:', error);
+                const postsList = document.getElementById('posts-list');
+                postsList.innerHTML = '<p class="text-red-500">Failed to load posts. Please try again later.</p>';
+            });
     </script>
 </body>
 </html>
