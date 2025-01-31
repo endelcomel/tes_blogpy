@@ -16,7 +16,7 @@
 
     <main>
         <h2>Artikel Terbaru</h2>
-        <ul id="article-list"></ul>
+        <div id="article-container" class="article-grid"></div>
     </main>
 
     <footer>
@@ -29,15 +29,26 @@
             const response = await fetch('https://blogpy-api.arekilang1.workers.dev/api/articles/');
             const articles = await response.json();
 
-            const articleList = document.getElementById('article-list');
+            // Sort articles by date (newest first)
+            articles.sort((a, b) => new Date(b.tanggal_post) - new Date(a.tanggal_post));
+
+            const articleContainer = document.getElementById('article-container');
             articles.forEach(article => {
-                const listItem = document.createElement('li');
+                const articleElement = document.createElement('div');
+                articleElement.classList.add('article-card');
+
                 const slug = slugify(article.judul);
                 const articleLink = document.createElement('a');
                 articleLink.href = `/artikel.html?slug=${slug}`;
-                articleLink.textContent = article.judul;
-                listItem.appendChild(articleLink);
-                articleList.appendChild(listItem);
+                
+                articleElement.innerHTML = `
+                    <h3>${article.judul}</h3>
+                    <p><strong>Tanggal:</strong> ${article.tanggal_post}</p>
+                    <p>${article.isi.substring(0, 150)}...</p> <!-- Tampilkan potongan artikel -->
+                    <a href="/artikel.html?slug=${slug}" class="read-more">Read More</a>
+                `;
+
+                articleContainer.appendChild(articleElement);
             });
         }
 
