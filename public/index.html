@@ -17,7 +17,7 @@
             <!-- Posts will be inserted here by JavaScript -->
         </div>
 
-        <!-- Area untuk menampilkan artikel lengkap -->
+        <!-- Article Details Section -->
         <div id="article-detail" class="mt-6 p-6 bg-white shadow-lg rounded-lg hidden">
             <h2 class="text-2xl font-semibold" id="article-title"></h2>
             <p class="text-gray-500" id="article-date"></p>
@@ -31,15 +31,17 @@
     </footer>
 
     <script>
+        // Function to load article based on slug from URL
         function loadArticleFromURL() {
-            const slug = window.location.pathname.slice(1);
-            if (slug) {
+            const slug = window.location.pathname.split('/').pop();
+            if (slug && slug !== "") {
                 fetchArticle(slug);
             } else {
                 loadPosts();
             }
         }
 
+        // Fetch the article based on the slug
         function fetchArticle(slug) {
             fetch(`https://blogpy-api.arekilang1.workers.dev/api/articles/${slug}`)
                 .then(response => response.json())
@@ -52,11 +54,13 @@
                 .catch(() => showPosts());
         }
 
+        // Show the article detail and hide the posts
         function showArticle() {
             document.getElementById('posts-list').classList.add('hidden');
             document.getElementById('article-detail').classList.remove('hidden');
         }
 
+        // Show the posts list and hide the article detail
         function showPosts() {
             document.getElementById('posts-list').classList.remove('hidden');
             document.getElementById('article-detail').classList.add('hidden');
@@ -64,7 +68,7 @@
 
         window.onload = loadArticleFromURL;
 
-        // Fetch API untuk mengambil daftar artikel
+        // Fetching the posts list
         fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
             .then(response => response.json())
             .then(data => {
@@ -76,12 +80,12 @@
                     postItem.innerHTML = `
                         <h3 class="text-xl font-semibold">${post.judul}</h3>
                         <p class="text-gray-700">${post.tanggal_post}</p>
-                        <a href="${slug}" class="text-blue-500 hover:underline mt-4 inline-block read-more" data-id="${post.id}" data-slug="${slug}">Read More</a>
+                        <a href="/${slug}" class="text-blue-500 hover:underline mt-4 inline-block read-more" data-id="${post.id}" data-slug="${slug}">Read More</a>
                     `;
                     postsList.appendChild(postItem);
                 });
 
-                // Event listener untuk tombol "Read More"
+                // Adding event listeners for Read More links
                 document.querySelectorAll('.read-more').forEach(button => {
                     button.addEventListener('click', function(event) {
                         event.preventDefault();
@@ -96,8 +100,11 @@
                 document.getElementById('posts-list').innerHTML = '<p class="text-red-500">Failed to load posts. Please try again later.</p>';
             });
 
-        // Event listener untuk tombol kembali
-        document.getElementById('back-button').addEventListener('click', showPosts);
+        // Adding back button functionality
+        document.getElementById('back-button').addEventListener('click', () => {
+            history.pushState({}, '', '/');
+            showPosts();
+        });
     </script>
 </body>
 </html>
