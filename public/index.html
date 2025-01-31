@@ -49,44 +49,45 @@
             document.getElementById('article-detail').classList.add('hidden');
         }
 
-        // Fetch daftar artikel
-        fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
-            .then(response => response.json())
-            .then(data => {
-                const postsList = document.getElementById('posts-list');
+        function loadArticles() {
+            fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
+                .then(response => response.json())
+                .then(data => {
+                    const postsList = document.getElementById('posts-list');
+                    postsList.innerHTML = ''; // Bersihkan sebelum menambahkan artikel
 
-                data.forEach(post => {
-                    const slug = slugify(post.judul);
-                    const postItem = document.createElement('div');
-                    postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
-                    postItem.innerHTML = `
-                        <h3 class="text-xl font-semibold">${post.judul}</h3>
-                        <p class="text-gray-700">${post.tanggal_post}</p>
-                        <a href="/${slug}" class="text-blue-500 hover:underline mt-4 inline-block read-more" data-id="${post.id}" data-slug="${slug}">Read More</a>
-                    `;
-                    postsList.appendChild(postItem);
-                });
-
-                // Cek slug di URL path
-                checkSlugFromURL(data);
-
-                // Event listener "Read More"
-                document.querySelectorAll('.read-more').forEach(button => {
-                    button.addEventListener('click', function(event) {
-                        event.preventDefault();
-                        const articleId = this.getAttribute('data-id');
-                        const slug = this.getAttribute('data-slug');
-                        history.pushState({}, '', `/${slug}`);
-                        fetchArticle(articleId);
+                    data.forEach(post => {
+                        const slug = slugify(post.judul);
+                        const postItem = document.createElement('div');
+                        postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
+                        postItem.innerHTML = `
+                            <h3 class="text-xl font-semibold">${post.judul}</h3>
+                            <p class="text-gray-700">${post.tanggal_post}</p>
+                            <a href="/${slug}" class="text-blue-500 hover:underline mt-4 inline-block read-more" data-id="${post.id}" data-slug="${slug}">Read More</a>
+                        `;
+                        postsList.appendChild(postItem);
                     });
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching posts:', error);
-                document.getElementById('posts-list').innerHTML = '<p class="text-red-500">Failed to load posts. Please try again later.</p>';
-            });
 
-        // Fungsi untuk menampilkan artikel berdasarkan ID
+                    // Cek slug di URL saat halaman pertama kali dimuat
+                    checkSlugFromURL(data);
+
+                    // Event listener "Read More"
+                    document.querySelectorAll('.read-more').forEach(button => {
+                        button.addEventListener('click', function(event) {
+                            event.preventDefault();
+                            const articleId = this.getAttribute('data-id');
+                            const slug = this.getAttribute('data-slug');
+                            history.pushState({ page: "article", id: articleId }, '', `/${slug}`);
+                            fetchArticle(articleId);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching posts:', error);
+                    document.getElementById('posts-list').innerHTML = '<p class="text-red-500">Failed to load posts. Please try again later.</p>';
+                });
+        }
+
         function fetchArticle(id) {
             fetch(`https://blogpy-api.arekilang1.workers.dev/api/articles/${id}`)
                 .then(response => response.json())
@@ -102,40 +103,35 @@
                 });
         }
 
-        // Fungsi untuk mengecek slug dari URL dan menampilkan artikel langsung
         function checkSlugFromURL(data) {
-            const pathSlug = window.location.pathname.slice(1); // Ambil slug tanpa "/"
+            const pathSlug = window.location.pathname.slice(1);
             if (pathSlug) {
                 const article = data.find(post => slugify(post.judul) === pathSlug);
                 if (article) {
                     fetchArticle(article.id);
                 }
+            } else {
+                showPostsList();
             }
         }
 
-        // Navigasi tombol "Back"
+        // Tombol "Back to Posts"
         document.getElementById('back-button').addEventListener('click', function() {
-            history.pushState({}, '', window.location.pathname);
+            history.pushState({ page: "home" }, '', '/');
             showPostsList();
         });
 
-        // Deteksi perubahan URL (Back/Forward di browser)
-        window.onpopstate = function() {
-            const pathSlug = window.location.pathname.slice(1);
-            if (pathSlug) {
-                fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
-                    .then(response => response.json())
-                    .then(data => {
-                        const article = data.find(post => slugify(post.judul) === pathSlug);
-                        if (article) {
-                            fetchArticle(article.id);
-                        }
-                    })
-                    .catch(error => console.error('Error fetching posts:', error));
+        // Deteksi perubahan URL saat tekan tombol "Back"
+        window.onpopstate = function(event) {
+            if (event.state && event.state.page === "article") {
+                fetchArticle(event.state.id);
             } else {
                 showPostsList();
             }
         };
+
+        // Load daftar artikel saat pertama kali halaman dimuat
+        loadArticles();
     </script>
 </body>
 </html>
