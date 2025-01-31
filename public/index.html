@@ -1,62 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlogPy - Latest Posts</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Blog - Sigma Male</title>
+    <link rel="stylesheet" href="/assets/style.css">
 </head>
-<body class="bg-gray-50">
-    <header class="bg-blue-600 text-white p-6 text-center">
-        <h1 class="text-3xl font-bold">Welcome to BlogPy!</h1>
+<body>
+    <header>
+        <h1>Blog tentang Sigma Male</h1>
+        <nav>
+            <a href="/">Beranda</a> | <a href="/about.html">Tentang</a>
+        </nav>
     </header>
 
-    <main class="container mx-auto p-6">
-        <h2 class="text-2xl font-semibold mb-4">Latest Posts</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="posts-list">
-            <!-- Posts will be inserted here by JavaScript -->
-        </div>
+    <main>
+        <h2>Artikel Terbaru</h2>
+        <ul id="article-list"></ul>
     </main>
 
-    <footer class="bg-blue-600 text-white text-center py-4">
-        <p>&copy; 2025 BlogPy. All Rights Reserved.</p>
+    <footer>
+        <p>&copy; 2025 Blog Sigma Male. Semua hak dilindungi.</p>
     </footer>
 
+    <script src="/slugify.js"></script>
     <script>
-        function slugify(text) {
-            return text.toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^a-z0-9-]/g, '')
-                .replace(/--+/g, '-');
+        async function fetchArticles() {
+            const response = await fetch('https://blogpy-api.arekilang1.workers.dev/api/articles/');
+            const articles = await response.json();
+
+            const articleList = document.getElementById('article-list');
+            articles.forEach(article => {
+                const listItem = document.createElement('li');
+                const slug = slugify(article.judul);
+                const articleLink = document.createElement('a');
+                articleLink.href = `/artikel.html?slug=${slug}`;
+                articleLink.textContent = article.judul;
+                listItem.appendChild(articleLink);
+                articleList.appendChild(listItem);
+            });
         }
 
-        // Fetch API untuk mengambil daftar artikel
-        fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch posts');
-            }
-            return response.json();
-        })
-        .then(data => {
-            const postsList = document.getElementById('posts-list');
-            data.forEach(post => {
-                const slug = slugify(post.judul);
-                const postItem = document.createElement('div');
-                postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
-                postItem.innerHTML = `
-                    <h3 class="text-xl font-semibold">${post.judul}</h3>
-                    <p class="text-gray-700">${post.tanggal_post}</p>
-                    <a href="https://tes-blogpy.pages.dev/${slug}" class="text-blue-500 hover:underline mt-4 inline-block">Read More</a>
-                `;
-                postsList.appendChild(postItem);
-            });
-        })
-        .catch(error => {
-            console.error('Error fetching posts:', error);
-            const postsList = document.getElementById('posts-list');
-            postsList.innerHTML = '<p class="text-red-500">Failed to load posts. Please try again later.</p>';
-        });
+        fetchArticles();
     </script>
 </body>
 </html>
