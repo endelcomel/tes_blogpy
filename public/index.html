@@ -65,9 +65,11 @@
                 const postItem = document.createElement('div');
                 postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
                 postItem.innerHTML = `
-                    <h3 class="text-xl font-semibold">${post.judul}</h3>
-                    <p class="text-gray-700">${post.tanggal_post}</p>
-                    <a href="/${slug}" class="text-blue-500 hover:underline mt-4 inline-block">Read More</a>
+                    <h3 class="text-xl font-semibold mb-2">
+                        <a href="/${slug}" class="text-blue-600 hover:underline">${post.judul}</a>
+                    </h3>
+                    <p class="text-gray-700 mb-4">${post.tanggal_post}</p>
+                    <a href="/${slug}" class="text-blue-500 hover:underline inline-block">Read More</a>
                 `;
                 postsList.appendChild(postItem);
             });
@@ -133,3 +135,4 @@
     </script>
 </body>
 </html>
+
