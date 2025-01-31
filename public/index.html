@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlogPy - Latest Posts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <header class="bg-blue-600 text-white p-6 text-center">
+        <h1 class="text-3xl font-bold">Welcome to BlogPy!</h1>
+    </header>
+
+    <main class="container mx-auto p-6">
+        <h2 class="text-2xl font-semibold mb-4">Latest Posts</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="posts-list">
+            <!-- Posts will be inserted here by JavaScript -->
+        </div>
+
+        <!-- Area untuk menampilkan artikel lengkap -->
+        <div id="article-detail" class="mt-6 p-6 bg-white shadow-lg rounded-lg hidden">
+            <h2 class="text-2xl font-semibold" id="article-title"></h2>
+            <p class="text-gray-500" id="article-date"></p>
+            <div class="mt-4" id="article-content"></div>
+            <button id="back-button" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Back to Posts</button>
+        </div>
+    </main>
+
+    <footer class="bg-blue-600 text-white text-center py-4">
+        <p>&copy; 2025 BlogPy. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        function slugify(text) {
+            return text.toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9-]/g, '')
+                .replace(/--+/g, '-');
+        }
+
+        function showArticle() {
+            document.getElementById('posts-list').classList.add('hidden');
+            document.getElementById('article-detail').classList.remove('hidden');
+        }
+
+        function showPostsList() {
+            document.getElementById('posts-list').classList.remove('hidden');
+            document.getElementById('article-detail').classList.add('hidden');
+        }
+
+        // Fetch API untuk mengambil daftar artikel
+        function slugify(text) {
+    return text.toLowerCase()
+        .replace(/\s+/g, '-')         // Ganti spasi dengan "-"
+        .replace(/[^a-z0-9-]/g, '')   // Hapus karakter non-alfanumerik kecuali "-"
+        .replace(/--+/g, '-')         // Hapus duplikasi "-"
+        .trim();
+}
+
+// Fetch API untuk mengambil daftar artikel
+fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
+    .then(response => response.json())
+    .then(data => {
+        const postsList = document.getElementById('posts-list');
+        data.forEach(post => {
+            const slug = slugify(post.judul);
+            const postItem = document.createElement('div');
+            postItem.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-lg');
+            postItem.innerHTML = `
+                <h3 class="text-xl font-semibold">${post.judul}</h3>
+                <p class="text-gray-700">${post.tanggal_post}</p>
+                <a href="?slug=${slug}" class="text-blue-500 hover:underline mt-4 inline-block read-more" data-id="${post.id}" data-slug="${slug}">Read More</a>
+            `;
+            postsList.appendChild(postItem);
+        });
+
+        // Cek apakah ada slug di URL, jika ada langsung tampilkan artikel
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('slug')) {
+            const slug = urlParams.get('slug');
+            const article = data.find(post => slugify(post.judul) === slug);
+            if (article) {
+                fetchArticle(article.id);
+            }
+        }
+
+        // Event listener untuk tombol "Read More"
+        document.querySelectorAll('.read-more').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                const articleId = this.getAttribute('data-id');
+                const slug = this.getAttribute('data-slug');
+                history.pushState({}, '', `?${slug}`);
+                fetchArticle(articleId);
+            });
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching posts:', error);
+        document.getElementById('posts-list').innerHTML = '<p class="text-red-500">Failed to load posts. Please try again later.</p>';
+    });
+
+// Fungsi untuk menampilkan artikel berdasarkan ID
+function fetchArticle(id) {
+    fetch(`https://blogpy-api.arekilang1.workers.dev/api/articles/${id}`)
+        .then(response => response.json())
+        .then(article => {
+            document.getElementById('article-title').textContent = article.judul;
+            document.getElementById('article-date').textContent = article.tanggal_post;
+            document.getElementById('article-content').innerHTML = article.isi;
+            showArticle();
+        })
+        .catch(error => {
+            console.error('Error fetching article:', error);
+            alert('Failed to load article. Please try again later.');
+        });
+}
+
+// Event listener untuk tombol kembali
+document.getElementById('back-button').addEventListener('click', function() {
+    history.pushState({}, '', window.location.pathname);
+    showPostsList();
+});
+
+
+        // Fungsi untuk menampilkan artikel berdasarkan ID
+        function fetchArticle(id) {
+            fetch(`https://blogpy-api.arekilang1.workers.dev/api/articles/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch article');
+                    }
+                    return response.json();
+                })
+                .then(article => {
+                    document.getElementById('article-title').textContent = article.judul;
+                    document.getElementById('article-date').textContent = article.tanggal_post;
+                    document.getElementById('article-content').innerHTML = article.isi;
+                    showArticle();
+                })
+                .catch(error => {
+                    console.error('Error fetching article:', error);
+                    alert('Failed to load article. Please try again later.');
+                });
+        }
+
+        // Event listener untuk tombol kembali
+        document.getElementById('back-button').addEventListener('click', showPostsList);
+    </script>
+</body>
+</html>
