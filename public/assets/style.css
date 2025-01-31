@@ -32,24 +32,35 @@ footer {
     width: 100%;
 }
 
-#article-list {
-    list-style-type: none;
-    padding: 0;
+.article-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 20px;
 }
 
-#article-list li {
-    margin: 10px 0;
+.article-card {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-#article-list a {
+.article-card h3 {
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.article-card p {
+    color: #555;
+    font-size: 1rem;
+}
+
+.read-more {
     color: #007bff;
     text-decoration: none;
 }
 
-#article-list a:hover {
+.read-more:hover {
     text-decoration: underline;
-}
-
-#article-content {
-    margin-top: 20px;
 }
