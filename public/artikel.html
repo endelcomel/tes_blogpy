@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artikel - Sigma Male</title>
+    <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+    <header>
+        <h1>Blog tentang Sigma Male</h1>
+        <nav>
+            <a href="/">Beranda</a> | <a href="/about.html">Tentang</a>
+        </nav>
+    </header>
+
+    <main>
+        <div id="article-container">
+            <h2 id="article-title"></h2>
+            <p id="article-date"></p>
+            <div id="article-content"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Blog Sigma Male. Semua hak dilindungi.</p>
+    </footer>
+
+    <script src="/slugify.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const slug = urlParams.get('slug');
+
+        async function fetchArticle(slug) {
+            const response = await fetch('https://blogpy-api.arekilang1.workers.dev/api/articles/');
+            const articles = await response.json();
+
+            const article = articles.find(a => slugify(a.judul) === slug);
+            if (article) {
+                document.getElementById('article-title').textContent = article.judul;
+                document.getElementById('article-date').textContent = article.tanggal_post;
+                document.getElementById('article-content').innerHTML = article.isi;
+            } else {
+                document.getElementById('article-container').innerHTML = '<p>Artikel tidak ditemukan</p>';
+            }
+        }
+
+        fetchArticle(slug);
+    </script>
+</body>
+</html>
