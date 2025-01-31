@@ -109,6 +109,8 @@
                 const article = data.find(post => slugify(post.judul) === pathSlug);
                 if (article) {
                     fetchArticle(article.id);
+                } else {
+                    showPostsList();
                 }
             } else {
                 showPostsList();
@@ -131,7 +133,7 @@
         };
 
         // Load daftar artikel saat pertama kali halaman dimuat
-        loadArticles();
+        window.onload = loadArticles;
     </script>
 </body>
 </html>
