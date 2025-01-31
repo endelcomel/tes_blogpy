@@ -90,7 +90,7 @@ fetch("https://blogpy-api.arekilang1.workers.dev/api/articles")
                 event.preventDefault();
                 const articleId = this.getAttribute('data-id');
                 const slug = this.getAttribute('data-slug');
-                history.pushState({}, '', `?${slug}`);
+                history.pushState({}, '', `${slug}`);
                 fetchArticle(articleId);
             });
         });
